@@ -452,6 +452,7 @@ bool my_yyoverflow(short **a, YYSTYPE **b, size_t *yystacksize);
 %token  <kwd> BIT_AND                       /* MYSQL-FUNC */
 %token  <kwd> BIT_OR                        /* MYSQL-FUNC */
 %token  <kwd> BIT_XOR                       /* MYSQL-FUNC */
+%token  <kwd> REM_AND_DIV
 %token  <kwd> BLOB_MARIADB_SYM              /* SQL-2003-R */
 %token  <kwd> BLOB_ORACLE_SYM               /* Oracle-R   */
 %token  <kwd> BODY_ORACLE_SYM               /* Oracle-R   */
@@ -1177,7 +1178,7 @@ bool my_yyoverflow(short **a, YYSTYPE **b, size_t *yystacksize);
 /* A dummy token to force the priority of table_ref production in a join. */
 %left   CONDITIONLESS_JOIN
 %left   JOIN_SYM INNER_SYM STRAIGHT_JOIN CROSS LEFT RIGHT ON_SYM USING
- 
+
 %left   SET_VAR
 %left   OR_SYM OR2_SYM
 %left   XOR
@@ -1195,7 +1196,7 @@ bool my_yyoverflow(short **a, YYSTYPE **b, size_t *yystacksize);
 %left   '&'
 %left   SHIFT_LEFT SHIFT_RIGHT
 %left   '-' '+' ORACLE_CONCAT_SYM
-%left   '*' '/' '%' DIV_SYM MOD_SYM
+%left   '*' '/' '%' DIV_SYM REM_AND_DIV MOD_SYM
 %left   '^'
 %left   MYSQL_CONCAT_SYM
 /*
@@ -9703,6 +9704,12 @@ bit_expr:
             if (unlikely($$ == NULL))
               MYSQL_YYABORT;
           }
+        | bit_expr REM_AND_DIV bit_expr %prec REM_AND_DIV
+          {
+            $$= new (thd->mem_root) Item_func_int_div(thd, $1, $3);
+            if (unlikely($$ == NULL))
+              MYSQL_YYABORT;
+          }
         | bit_expr MOD_SYM bit_expr %prec MOD_SYM
           {
             $$= new (thd->mem_root) Item_func_mod(thd, $1, $3);
@@ -16406,6 +16413,7 @@ reserved_keyword_udt_not_param_type:
         | BIT_AND
         | BIT_OR
         | BIT_XOR
+        | REM_AND_DIV
         | BODY_ORACLE_SYM
         | BOTH
         | BY
