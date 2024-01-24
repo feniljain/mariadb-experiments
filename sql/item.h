@@ -1449,6 +1449,9 @@ public:
       If value is not null null_value flag will be reset to FALSE.
   */
   virtual longlong val_int()=0;
+  virtual longlong val_int_rem() {
+	return 0;
+  };
   Longlong_hybrid to_longlong_hybrid()
   {
     return Longlong_hybrid(val_int(), unsigned_flag);

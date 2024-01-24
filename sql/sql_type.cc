@@ -43,6 +43,7 @@ Named_type_handler<Type_handler_short> type_handler_sshort("smallint");
 Named_type_handler<Type_handler_long> type_handler_slong("int");
 Named_type_handler<Type_handler_int24> type_handler_sint24("mediumint");
 Named_type_handler<Type_handler_longlong> type_handler_slonglong("bigint");
+Named_type_handler<Type_handler_two_long> type_handler_stwo_long("bigint");
 Named_type_handler<Type_handler_utiny> type_handler_utiny("tiny unsigned");
 Named_type_handler<Type_handler_ushort> type_handler_ushort("smallint unsigned");
 Named_type_handler<Type_handler_ulong> type_handler_ulong("int unsigned");
@@ -1770,6 +1771,13 @@ Type_handler::type_handler_long_or_longlong(uint max_char_length,
   return &type_handler_slonglong;
 }
 
+const Type_handler *
+Type_handler::type_handler_two_long(uint max_char_length,
+                                            bool unsigned_flag)
+{
+  return &type_handler_stwo_long;
+}
+
 
 /*
   This method is called for CASE (and its abbreviations) and LEAST/GREATEST
@@ -2151,6 +2159,7 @@ Type_handler::get_handler_by_field_type(enum_field_types type)
   case MYSQL_TYPE_SHORT:       return &type_handler_sshort;
   case MYSQL_TYPE_LONG:        return &type_handler_slong;
   case MYSQL_TYPE_LONGLONG:    return &type_handler_slonglong;
+  // case MYSQL_TYPE_TWO_LONG:    return &type_handler_stwo_long;
   case MYSQL_TYPE_INT24:       return &type_handler_sint24;
   case MYSQL_TYPE_YEAR:        return &type_handler_year;
   case MYSQL_TYPE_BIT:         return &type_handler_bit;
@@ -2206,6 +2215,7 @@ Type_handler::get_handler_by_real_type(enum_field_types type)
   case MYSQL_TYPE_SHORT:       return &type_handler_sshort;
   case MYSQL_TYPE_LONG:        return &type_handler_slong;
   case MYSQL_TYPE_LONGLONG:    return &type_handler_slonglong;
+  // case MYSQL_TYPE_TWO_LONG:    return &type_handler_stwo_long;
   case MYSQL_TYPE_INT24:       return &type_handler_sint24;
   case MYSQL_TYPE_YEAR:        return &type_handler_year;
   case MYSQL_TYPE_BIT:         return &type_handler_bit;
@@ -7501,6 +7511,18 @@ bool Type_handler::
   longlong nr= item->val_int();
   if (!item->null_value)
     return protocol->store_long(nr);
+  return protocol->store_null();
+}
+
+bool Type_handler::
+       Item_send_two_long(Item *item, Protocol *protocol, st_value *buf) const
+{
+  DBUG_PRINT("info", ("DEV: Item_send_two_long"));
+  longlong nr= item->val_int();
+  longlong nr1= item->val_int_rem();
+  if (!item->null_value)
+    protocol->store_long(nr);
+    return protocol->store_long(nr1);
   return protocol->store_null();
 }
 

@@ -8778,6 +8778,7 @@ static bool is_versioning_timestamp(const Column_definition *f)
 static bool is_some_bigint(const Column_definition *f)
 {
   return f->type_handler() == &type_handler_slonglong ||
+         // f->type_handler() == &type_handler_stwo_long ||
          f->type_handler() == &type_handler_ulonglong ||
          f->type_handler() == &type_handler_vers_trx_id;
 }

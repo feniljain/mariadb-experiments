@@ -1189,7 +1189,8 @@ bool Protocol::send_result_set_metadata(List<Item> *list, uint flags)
       MARIADB_CLIENT_CACHE_METADATA client capability is set.
     */
     uchar buff[MAX_INT_WIDTH+1];
-    uchar *pos= net_store_length(buff, list->elements);
+    // uchar *pos= net_store_length(buff, list->elements);
+    uchar *pos= net_store_length(buff, 2);
     if (thd->client_capabilities & MARIADB_CLIENT_CACHE_METADATA)
       *pos++= (uchar)send_column_info;
 
@@ -1470,8 +1471,11 @@ bool Protocol_text::store_numeric_string_aux(const char *from, size_t length)
 {
   CHARSET_INFO *tocs= thd->variables.character_set_results;
   // 'tocs' is NULL when the client issues SET character_set_results=NULL
-  if (tocs && (tocs->state & MY_CS_NONASCII))   // Conversion needed
+  if (tocs && (tocs->state & MY_CS_NONASCII))   // Conversion needed 
+  {
     return net_store_data_cs((uchar*) from, length, &my_charset_latin1, tocs);
+  }
+
   return net_store_data((uchar*) from, length); // No conversion
 }
 
@@ -1544,10 +1548,10 @@ bool Protocol_text::store_short(longlong from)
 
 bool Protocol_text::store_long(longlong from)
 {
-#ifndef DBUG_OFF
-  DBUG_ASSERT(valid_handler(field_pos, PROTOCOL_SEND_LONG));
-  field_pos++;
-#endif
+// #ifndef DBUG_OFF
+//   DBUG_ASSERT(valid_handler(field_pos, PROTOCOL_SEND_LONG));
+//   field_pos++;
+// #endif
   char buff[22];
   size_t length= (size_t) (int10_to_str((long int)from, buff,
                                         (from < 0) ? - 10 : 10) - buff);

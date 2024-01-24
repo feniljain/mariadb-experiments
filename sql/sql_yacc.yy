@@ -9706,7 +9706,7 @@ bit_expr:
           }
         | bit_expr REM_AND_DIV bit_expr %prec REM_AND_DIV
           {
-            $$= new (thd->mem_root) Item_func_int_div(thd, $1, $3);
+            $$= new (thd->mem_root) Item_func_int_rem_and_div(thd, $1, $3);
             if (unlikely($$ == NULL))
               MYSQL_YYABORT;
           }
