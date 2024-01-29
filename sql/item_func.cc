@@ -818,7 +818,6 @@ bool Item_num_op::fix_type_handler(const Type_aggregator *aggregator)
 bool Item_func_plus::fix_length_and_dec(THD *thd)
 {
   DBUG_ENTER("Item_func_plus::fix_length_and_dec");
-  DBUG_PRINT("info", ("name %s", func_name()));
   const Type_aggregator *aggregator= &type_handler_data->m_type_aggregator_for_plus;
   DBUG_EXECUTE_IF("num_op", aggregator= &type_handler_data->m_type_aggregator_for_result;);
   DBUG_ASSERT(aggregator->is_commutative());
@@ -1566,6 +1565,9 @@ bool Item_func_div::fix_length_and_dec(THD *thd)
 longlong Item_func_int_div::val_int()
 {
   DBUG_ASSERT(fixed());
+  DBUG_PRINT("info", ("DEV: entered Item_func_int_div"));
+
+  // my_hash_free(nullptr);
 
   /*
     Perform division using DECIMAL math if either of the operands has a
@@ -1613,8 +1615,74 @@ longlong Item_func_int_div::val_int()
                                                  val0.neg() != val1.neg()));
 }
 
-
 bool Item_func_int_div::fix_length_and_dec(THD *thd)
+{
+  uint32 prec= args[0]->decimal_int_part();
+  set_if_smaller(prec, MY_INT64_NUM_DECIMAL_DIGITS);
+  fix_char_length(prec);
+  set_maybe_null();
+  unsigned_flag=args[0]->unsigned_flag | args[1]->unsigned_flag;
+  return false;
+}
+
+longlong Item_func_int_rem_and_div::val_int()
+{
+  DBUG_ASSERT(fixed());
+  DBUG_PRINT("info", ("DEV: entered Item_func_int_rem_and_div"));
+
+  // my_hash_free(nullptr);
+
+  /*
+    Perform division using DECIMAL math if either of the operands has a
+    non-integer type
+  */
+  if (args[0]->result_type() != INT_RESULT ||
+      args[1]->result_type() != INT_RESULT)
+  {
+    VDec2_lazy val(args[0], args[1]);
+    if ((null_value= val.has_null()))
+      return 0;
+
+    int err;
+    my_decimal tmp;
+    if ((err= my_decimal_div(E_DEC_FATAL_ERROR & ~E_DEC_DIV_ZERO, &tmp,
+                             val.m_a.ptr(), val.m_b.ptr(), 0)) > 3)
+    {
+      if (err == E_DEC_DIV_ZERO)
+        signal_divide_by_null();
+      return 0;
+    }
+
+    my_decimal truncated;
+    if (tmp.round_to(&truncated, 0, TRUNCATE))
+      DBUG_ASSERT(false);
+
+    longlong res;
+    if (my_decimal2int(E_DEC_FATAL_ERROR, &truncated, unsigned_flag, &res) &
+        E_DEC_OVERFLOW)
+      raise_integer_overflow();
+    return res;
+  }
+
+  Longlong_hybrid val0= args[0]->to_longlong_hybrid();
+  Longlong_hybrid val1= args[1]->to_longlong_hybrid();
+  if ((null_value= (args[0]->null_value || args[1]->null_value)))
+    return 0;
+  if (val1 == 0)
+  {
+    signal_divide_by_null();
+    return 0;
+  }
+
+  return check_integer_overflow(ULonglong_hybrid(val0.abs() / val1.abs(), false));
+}
+
+longlong Item_func_int_rem_and_div::val_int_rem()
+{
+  return check_integer_overflow(ULonglong_hybrid(7, false));
+}
+
+bool Item_func_int_rem_and_div::fix_length_and_dec(THD *thd)
 {
   uint32 prec= args[0]->decimal_int_part();
   set_if_smaller(prec, MY_INT64_NUM_DECIMAL_DIGITS);

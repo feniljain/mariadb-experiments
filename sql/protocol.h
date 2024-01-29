@@ -45,6 +45,7 @@ protected:
   const Type_handler **field_handlers;
   bool valid_handler(uint pos, protocol_send_type_t type) const
   {
+    // int length = sizeof(field_handlers) / sizeof(field_handlers[0]);
     return field_handlers == 0 ||
            field_handlers[field_pos]->protocol_send_type() == type;
   }

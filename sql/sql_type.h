@@ -3653,6 +3653,7 @@ protected:
   bool Item_send_tiny(Item *item, Protocol *protocol, st_value *buf) const;
   bool Item_send_short(Item *item, Protocol *protocol, st_value *buf) const;
   bool Item_send_long(Item *item, Protocol *protocol, st_value *buf) const;
+  bool Item_send_two_long(Item *item, Protocol *protocol, st_value *buf) const;
   bool Item_send_longlong(Item *item, Protocol *protocol, st_value *buf) const;
   bool Item_send_float(Item *item, Protocol *protocol, st_value *buf) const;
   bool Item_send_double(Item *item, Protocol *protocol, st_value *buf) const;
@@ -3678,6 +3679,8 @@ public:
   static const Type_handler *string_type_handler(uint max_octet_length);
   static const Type_handler *bit_and_int_mixture_handler(uint max_char_len);
   static const Type_handler *type_handler_long_or_longlong(uint max_char_len,
+                                                           bool unsigned_flag);
+  static const Type_handler *type_handler_two_long(uint max_char_len,
                                                            bool unsigned_flag);
   /**
     Return a string type handler for Item
@@ -5759,6 +5762,16 @@ public:
                                    uint32 flags) const override;
   void Item_param_set_param_func(Item_param *param,
                                  uchar **pos, ulong len) const override;
+};
+
+class Type_handler_two_long: public Type_handler_long
+{
+public:
+  virtual ~Type_handler_two_long() = default;
+  bool Item_send(Item *item, Protocol *protocol, st_value *buf) const override
+  {
+    return Item_send_two_long(item, protocol, buf);
+  }
 };
 
 

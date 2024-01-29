@@ -1741,6 +1741,46 @@ public:
   { return get_item_copy<Item_func_int_div>(thd, this); }
 };
 
+class Item_func_int_rem_and_div :public Item_int_func
+{
+public:
+  Item_func_int_rem_and_div(THD *thd, Item *a, Item *b): Item_int_func(thd, a, b)
+  {}
+  longlong val_int() override;
+  longlong val_int_rem() override;
+  LEX_CSTRING func_name_cstring() const override
+  {
+    static LEX_CSTRING name= {STRING_WITH_LEN("REM_AND_DIV") };
+    return name;
+  }
+  enum precedence precedence() const override { return MUL_PRECEDENCE; }
+  const Type_handler *type_handler() const override
+  { return Type_handler::type_handler_two_long(max_char_length(), false); }
+  // { return &type_handler_stwo_long; }
+  bool fix_length_and_dec(THD *thd) override;
+  void print(String *str, enum_query_type query_type) override
+  {
+    print_op(str, query_type);
+  }
+
+  virtual bool send(Protocol *protocol, st_value *buffer) override
+  {
+     return type_handler()->Item_send(this, protocol, buffer);
+  }
+
+  // const Type_handler *type_handler() const override
+  // {
+  //   return Type_handler::type_handler_two_long(max_char_length(),
+  //                                                      unsigned_flag);
+  // }
+
+  bool check_partition_func_processor(void *int_arg) override {return FALSE;}
+  bool check_vcol_func_processor(void *arg) override { return FALSE;}
+  bool need_parentheses_in_default() override { return true; }
+  Item *get_copy(THD *thd) override
+  { return get_item_copy<Item_func_int_rem_and_div>(thd, this); }
+};
+
 
 class Item_func_mod :public Item_num_op
 {

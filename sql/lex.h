@@ -200,6 +200,7 @@ SYMBOL symbols[] = {
   { "DISTINCT",		SYM(DISTINCT)},
   { "DISTINCTROW",	SYM(DISTINCT)},	/* Access likes this */
   { "DIV",		SYM(DIV_SYM)},
+  { "REM_AND_DIV",   SYM(REM_AND_DIV)},
   { "DO",		SYM(DO_SYM)},
   { "DOUBLE",		SYM(DOUBLE_SYM)},
   { "DO_DOMAIN_IDS",    SYM(DO_DOMAIN_IDS_SYM)},

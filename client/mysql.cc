@@ -917,6 +917,7 @@ static COMMANDS commands[] = {
   { "BIT_OR", 0, 0, 0, ""},
   { "BIT_AND", 0, 0, 0, ""},
   { "BIT_XOR", 0, 0, 0, ""},
+  { "REM_AND_DIV", 0, 0, 0, ""},
   { "CAST", 0, 0, 0, ""},
   { "CEIL", 0, 0, 0, ""},
   { "CEILING", 0, 0, 0, ""},
